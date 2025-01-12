@@ -6,8 +6,9 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Hash;
 
-
+use function Laravel\Prompts\password;
 
 class AdminController extends Controller
 {
@@ -70,5 +71,51 @@ class AdminController extends Controller
 
 
 
+    }
+
+    public function adminChangePassword()  {
+        $profileData = Auth::user();
+
+        return view('admin.admin_change_password',compact('profileData'));
+        
+    }
+
+
+    public function adminUpdatePassword(Request $request){
+
+       //Validation
+
+       $request->validate([
+        'old_password' => 'required',
+        'new_password' => 'required|confirmed'
+       ]);
+
+       // Match The Old Password
+
+       if(!Hash::check($request->old_password, auth::user()->password)){
+
+        $notification = array(
+            'message'=> 'Old Password Does not Match!',
+            'alert-type'=>'error'
+        );
+
+        return back()->with($notification);
+       };
+
+
+       //Update New Password
+       auth::user()->update([
+        'password'=>Hash::make($request->new_password)
+       ]);
+
+       $notification = array(
+        'message'=> 'Password Changed Successfully',
+        'alert-type'=>'success'
+        );
+
+         return back()->with($notification);
+   
+
+        
     }
 }

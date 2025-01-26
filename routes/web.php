@@ -83,6 +83,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         Route::post('/update/permission/{id}',  'updatePermission')->name('update.permission');
         Route::get('/import/permission', 'importPermission')->name('import.permission');
         Route::get('/export/permissions', 'exportPermissions')->name('export');
+        Route::post('/import/permissions',  'importPermissions')->name('import');
     });
 });
 

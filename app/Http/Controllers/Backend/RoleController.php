@@ -124,16 +124,6 @@ class RoleController extends Controller
 
         $filePath = $file->storeAs('temp', $file->getClientOriginalName());
 
-        /* $fileFullPath = storage_path('app/private' . $filePath);
-
-         logger('Uploaded file path: ' . storage_path('app/' . $filePath));
-        dump(storage_path('app/' . $filePath));
-
-        // Check if the file exists
-        if (!file_exists($fileFullPath)) {
-            dd('File not found: ' . $fileFullPath);
-        } */
-
         // Import the data from the Excel file
         PermissionsImport::importFromExcel(storage_path('app/private/' . $filePath));
 
@@ -146,5 +136,84 @@ class RoleController extends Controller
         );
 
         return redirect()->back()->with($notification);
+    }
+
+
+    // Role Methods
+
+    public function allRoles()
+    {
+        $roles = Role::all();
+        return view('backend.pages.roles.all_roles', compact('roles'));
+    }
+
+    public function addRole()
+    {
+        return view('backend.pages.roles.add_role');
+    }
+
+    public function storeRole(Request $request)
+    {
+
+        $request->validate([
+            'role_name' => 'required|max:200|string|unique:roles,name,' . $request->id
+        ]);
+
+        $name = Str::of($request->role_name)->trim()->stripTags();
+
+        Role::create([
+            'name' => $name
+        ]);
+
+        $notification = array(
+            'message' => "Role Created Successfully",
+            'alert-type' => 'success'
+        );
+
+        return redirect()->route('all.roles')->with($notification);
+    }
+
+    public function deleteRole($id)
+    {
+
+        Role::findOrFail($id)->delete();
+
+        $notification = array(
+            'message' => "Role Deleted Successfully",
+            'alert-type' => 'success'
+        );
+
+        return redirect()->back()->with($notification);
+    }
+
+    public function editRole($id)
+    {
+
+        $role = Role::findOrFail($id);
+        return view('backend.pages.roles.edit_role', compact('role'));
+    }
+
+    public function updateRole(Request $request, $id)
+    {
+
+        $role = Role::findOrFail($id);
+
+
+        $request->validate([
+            'role_name' => 'required|max:200|string|unique:roles,name,' . $id
+        ]);
+
+        $name = Str::of($request->role_name)->trim()->stripTags();
+
+        $role->update([
+            'name' => $name
+        ]);
+
+        $notification = array(
+            'message' => "Role Updated Successfully",
+            'alert-type' => 'success'
+        );
+
+        return redirect()->route('all.roles')->with($notification);
     }
 }
